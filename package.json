@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "JWT token based authentication for Node.js GraphQL Apollo Server 2.0",
   "main": "index.js",
-  "author": "Tharun Bathula",
+  "author": "Bogdan Bele",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -27,6 +27,6 @@
     "mongodb": "^3.3.2"
   },
   "scripts": {
-    "start": "nodemon src"
+    "start": "nodemon src --experimental-modules"
   }
 }

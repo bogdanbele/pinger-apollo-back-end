@@ -15,10 +15,11 @@ const userResolvers = {
                 throw new AuthenticationError("Please Login Again!")
             }
         }
+
     },
     Mutation: {
         register: async (parent, args, context, info) => {
-            const newUser = { username: args.username, password: await encryptPassword(args.password) };
+            const newUser = { username: args.username, password: await encryptPassword(args.password), createdAt: Date.now() };
             // Check conditions
             const user = await db.getCollection('user').findOne({ username: args.username });
             if (user) {
@@ -42,6 +43,18 @@ const userResolvers = {
                 throw new AuthenticationError("Wrong Password!")
             }
         },
+        createEvent: async(parent, args, context, info) => {
+            if (!context.loggedIn) {
+                throw new AuthenticationError("Please Login Again!")
+            }
+            const { title, description } = args;
+            const newEvent = { eventCreator: context.user, title, description};
+            try {
+                return (await db.getCollection('events').insertOne(newEvent)).ops[0]
+            }catch (e) {
+                throw e
+            }
+        }
     }
 };
 
