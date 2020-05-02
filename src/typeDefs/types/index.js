@@ -14,8 +14,8 @@ const inviteType = gql`
         users: [User!]!
         event: Event
         response: Int
-        date_sent: Date!
-        date_end: Date!
+        dateSent: Date!
+        dateEnd: Date!
   }
 `;
 
@@ -24,6 +24,7 @@ const eventType = gql`
     title: String!
     eventCreator: User!
     description: String!
+    createdAt: Date!
   }
 `;
 

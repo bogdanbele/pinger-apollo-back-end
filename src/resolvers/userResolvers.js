@@ -1,5 +1,6 @@
 const { getToken, encryptPassword, comparePassword } = require("../util");
 const db = require('../db');
+const { GraphQLScalarType } = require('graphql') ;
 
 const {
     AuthenticationError,
@@ -48,14 +49,30 @@ const userResolvers = {
                 throw new AuthenticationError("Please Login Again!")
             }
             const { title, description } = args;
-            const newEvent = { eventCreator: context.user, title, description};
+            const newEvent = { eventCreator: context.user, title, description, createdAt: Date.now()};
             try {
                 return (await db.getCollection('events').insertOne(newEvent)).ops[0]
             }catch (e) {
                 throw e
             }
+        },
+    },
+    Date: new GraphQLScalarType({
+        name: 'Date',
+        description: 'Custom date scalar',
+        parseValue(value) {
+            return value;
+        },
+        serialize(value) {
+            return new Date(Number(value));
+        },
+        parseLiteral(ast) {
+            if (ast.kind === Kind.INT) {
+                return new Date(ast.value);
+            }
+            return null;
         }
-    }
+    })
 };
 
 module.exports = {
