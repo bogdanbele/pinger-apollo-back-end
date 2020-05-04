@@ -16,20 +16,6 @@ const userResolvers = {
                 throw new AuthenticationError("Please Login Again!")
             }
         },
-        myEvents: async (parent, args, context, info) => {
-            if (!context.loggedIn) {
-                throw new AuthenticationError("Please Login Again!")
-            }
-            try{
-                const eventList = (await db.getCollection('events').find({ eventCreator: context.user.username})).toArray().then(res => { return res });
-                console.log(eventList)
-                return eventList
-            }catch (e) {
-                throw e
-            }
-
-        }
-
     },
     Mutation: {
         register: async (parent, args, context, info) => {
@@ -57,18 +43,7 @@ const userResolvers = {
                 throw new AuthenticationError("Wrong Password!")
             }
         },
-        createEvent: async(parent, args, context, info) => {
-            if (!context.loggedIn) {
-                throw new AuthenticationError("Please Login Again!")
-            }
-            const { title, description } = args;
-            const newEvent = { eventCreator: context.user.username, title, description, createdAt: Date.now()};
-            try {
-                return (await db.getCollection('events').insertOne(newEvent)).ops[0]
-            }catch (e) {
-                throw e
-            }
-        },
+      
     },
     Date: new GraphQLScalarType({
         name: 'Date',
