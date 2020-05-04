@@ -22,7 +22,7 @@ const inviteType = gql`
 const eventType = gql`
   type Event {
     title: String!
-    eventCreator: User!
+    eventCreator: String!
     description: String!
     createdAt: Date!
   }
