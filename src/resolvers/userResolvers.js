@@ -3,7 +3,7 @@ const db = require('../db');
 const { GraphQLScalarType } = require('graphql') ;
 
 const {
-    AuthenticationError,
+    AuthenticationError,  UserInputError,
 } = require('apollo-server');
 
 const userResolvers = {
@@ -34,14 +34,21 @@ const userResolvers = {
             }
         },
         login: async (parent, args, context, info) => {
-            const user = await db.getCollection('user').findOne({ username: args.username });
-            const isMatch = await comparePassword(args.password, user.password);
-            if (isMatch) {
-                const token = getToken(user);
-                return { ...user, token };
-            } else {
-                throw new AuthenticationError("Wrong Password!")
+            try {
+                const user = await db.getCollection('user').findOne({username: args.username});
+                const isMatch = await comparePassword(args.password, user.password);
+                if (!isMatch) {
+                    return new UserInputError("Wrong Password!")
+                } else {
+                    const token = getToken(user);
+                    return {...user, token};
+                }
             }
+            catch (e) {
+                console.log(e);
+                throw new AuthenticationError("User does not exist!")
+            }
+
         },
       
     },
