@@ -11,7 +11,8 @@ const eventResolvers = {
                 throw new AuthenticationError("Please Login Again!")
             }
             try{
-                const eventList = (await db.getCollection('events').find({ eventCreator: context.user.username})).toArray().then(res => { return res });
+                const eventList = (await db.getCollection('events').find({ eventCreator: context.user.username})).toArray().then(res => {
+                    return res });
                 console.log(eventList)
                 return eventList
             }catch (e) {
