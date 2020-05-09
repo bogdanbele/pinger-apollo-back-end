@@ -13,6 +13,7 @@ const query = gql`
     register(username: String!, password: String!): User
     login(username: String!, password: String!): User
     createEvent(title: String!, description: String!): Event
+    deleteEvent(_id: ID!): String!
   }
 `;
 
