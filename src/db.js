@@ -23,7 +23,7 @@ exports.getDB = () => state.db;
 
 exports.close = done => {
 	if (state.db) {
-		state.db.close((err, result) => {
+		state.db.close(err => {
 			state.db = null;
 			state.mode = null;
 			done(err);
