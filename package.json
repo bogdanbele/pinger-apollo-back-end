@@ -26,7 +26,25 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.3.2"
   },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^2.31.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-flowtype": "^4.7.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^2.5.0",
+    "prettier": "^2.0.5",
+    "prettier-eslint": "^9.0.1"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended"
+  },
   "scripts": {
-    "start": "nodemon src --experimental-modules"
+    "start": "nodemon src --experimental-modules",
+    "lint": "eslint src/**/*{.js,.jsx}",
+    "lint:fix": "eslint src/**/*{.js,.jsx} --fix"
   }
 }

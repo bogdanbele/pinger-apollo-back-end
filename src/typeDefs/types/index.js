@@ -1,4 +1,4 @@
-const {gql} = require("apollo-server");
+const {gql} = require('apollo-server');
 
 const userType = gql`
     type User {
@@ -33,5 +33,5 @@ const eventType = gql`
 
 module.exports = {
 	userType,
-	eventType
+	eventType,
 };

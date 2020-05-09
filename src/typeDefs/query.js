@@ -1,4 +1,4 @@
-const { gql } = require("apollo-server");
+const {gql} = require('apollo-server');
 
 const query = gql`
   scalar Date
@@ -18,5 +18,5 @@ const query = gql`
 `;
 
 module.exports = {
-  query,
+	query,
 };
