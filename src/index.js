@@ -9,7 +9,7 @@ const server = new ApolloServer({
 	typeDefs,
 	resolvers,
 	engine: {
-		apiKey: 'service:pinger:m94ehZFlFtO5V7P2e4rZPQ',
+		apiKey: process.env.APOLLO_KEY,
 	},
 	context: ({req}) => {
 

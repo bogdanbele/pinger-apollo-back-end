@@ -44,6 +44,7 @@
   },
   "scripts": {
     "start": "nodemon src --experimental-modules",
+    "publish-schema": "npx apollo service:push",
     "lint": "eslint src/**/*{.js,.jsx}",
     "lint:fix": "eslint src/**/*{.js,.jsx} --fix"
   }
