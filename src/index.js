@@ -8,6 +8,9 @@ require('dotenv').config();
 const server = new ApolloServer({
 	typeDefs,
 	resolvers,
+	engine: {
+		apiKey: 'service:pinger:m94ehZFlFtO5V7P2e4rZPQ',
+	},
 	context: ({req}) => {
 
 		// Connect to DB
