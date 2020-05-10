@@ -35,7 +35,7 @@ const eventResolvers = {
 				title,
 				description,
 				createdAt: Date.now(),
-				scheduledAt: scheduledAt,
+				scheduledAt,
 			};
 			try {
 				return (await db.getCollection('events').insertOne(newEvent)).ops[0];
