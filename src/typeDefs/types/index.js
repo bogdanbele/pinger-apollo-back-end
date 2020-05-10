@@ -28,7 +28,7 @@ const eventType = gql`
 		eventCreator: String!
 		description: String!
 		createdAt: Date!
-		scheduledAt: Date
+		scheduledAt: Date!
 	}
 `;
 

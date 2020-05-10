@@ -12,7 +12,7 @@ const query = gql`
 	type Mutation {
 		register(username: String!, password: String!): User
 		login(username: String!, password: String!): User
-		createEvent(title: String!, description: String!, scheduledAt: String): Event
+		createEvent(title: String!, description: String!, scheduledAt: Date!): Event
 		deleteEvent(_id: ID!): String!
 	}
 `;

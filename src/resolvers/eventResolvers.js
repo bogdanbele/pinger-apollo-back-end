@@ -1,9 +1,9 @@
-const { statuses } = require('../helpers/errorHandlers');
+const {statuses} = require('../helpers/errorHandlers');
 
 const db = require('../db');
 const ObjectId = require('mongodb').ObjectId;
 
-const { AuthenticationError, UserInputError } = require('apollo-server');
+const {AuthenticationError, UserInputError} = require('apollo-server');
 
 const eventResolvers = {
 	Query: {
@@ -12,7 +12,7 @@ const eventResolvers = {
 				throw new AuthenticationError('Please Login Again!');
 			}
 			try {
-				return (await db.getCollection('events').find({ eventCreator: context.user.username }))
+				return (await db.getCollection('events').find({eventCreator: context.user.username}))
 					.toArray()
 					.then((res) => {
 						return res;
@@ -28,7 +28,7 @@ const eventResolvers = {
 				throw new AuthenticationError('Please Login Again!');
 			}
 
-			const { title, description, scheduledAt } = args;
+			const {title, description, scheduledAt} = args;
 
 			const newEvent = {
 				eventCreator: context.user.username,
@@ -37,18 +37,14 @@ const eventResolvers = {
 				createdAt: Date.now(),
 				scheduledAt,
 			};
-			try {
-				return (await db.getCollection('events').insertOne(newEvent)).ops[0];
-			} catch (e) {
-				throw e;
-			}
+			return (await db.getCollection('events').insertOne(newEvent)).ops[0];
 		},
 		deleteEvent: async (parent, args, context, info) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
 			try {
-				const event = await db.getCollection('events').findOne({ _id: ObjectId(args._id) });
+				const event = await db.getCollection('events').findOne({_id: ObjectId(args._id)});
 				if (event) {
 					await db.getCollection('events').deleteOne(event);
 					return statuses.SUCCESS;
