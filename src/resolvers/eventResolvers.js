@@ -3,27 +3,23 @@ const {statuses} = require('../helpers/errorHandlers');
 const db = require('../db');
 const ObjectId = require('mongodb').ObjectId;
 
-const {AuthenticationError, UserInputError} = require('apollo-server');
+const {AuthenticationError} = require('apollo-server');
 
 const eventResolvers = {
 	Query: {
-		myEvents: async (parent, args, context, info) => {
+		myEvents: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
-			try {
-				return (await db.getCollection('events').find({eventCreator: context.user.username}))
-					.toArray()
-					.then((res) => {
-						return res;
-					});
-			} catch (e) {
-				throw e;
-			}
+			return (await db.getCollection('events').find({eventCreator: context.user._id}))
+				.toArray()
+				.then(res => {
+					return res;
+				});
 		},
 	},
 	Mutation: {
-		createEvent: async (parent, args, context, info) => {
+		createEvent: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -31,7 +27,7 @@ const eventResolvers = {
 			const {title, description, scheduledAt} = args;
 
 			const newEvent = {
-				eventCreator: context.user.username,
+				eventCreator: context.user._id,
 				title,
 				description,
 				createdAt: Date.now(),
@@ -39,20 +35,17 @@ const eventResolvers = {
 			};
 			return (await db.getCollection('events').insertOne(newEvent)).ops[0];
 		},
-		deleteEvent: async (parent, args, context, info) => {
+		deleteEvent: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
-			try {
-				const event = await db.getCollection('events').findOne({_id: ObjectId(args._id)});
-				if (event) {
-					await db.getCollection('events').deleteOne(event);
-					return statuses.SUCCESS;
-				} else {
-					return statuses.NO_MATCH;
-				}
-			} catch (e) {
-				throw e;
+
+			const event = await db.getCollection('events').findOne({_id: ObjectId(args._id)});
+			if (event) {
+				await db.getCollection('events').deleteOne(event);
+				return statuses.SUCCESS;
+			} else {
+				return statuses.NO_MATCH;
 			}
 		},
 	},

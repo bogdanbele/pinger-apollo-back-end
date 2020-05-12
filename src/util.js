@@ -19,7 +19,7 @@ const encryptPassword = password => new Promise((resolve, reject) => {
 	});
 });
 
-const comparePassword = (password, hash) => new Promise(async(resolve, reject) => {
+const comparePassword = (password, hash) => async(resolve, reject) => {
 	try {
 		const isMatch = await bcrypt.compare(password, hash);
 		resolve(isMatch);
@@ -28,13 +28,12 @@ const comparePassword = (password, hash) => new Promise(async(resolve, reject) =
 		reject(err);
 		return false;
 	}
-});
+};
 
 const getToken = payload => {
-	const token = jwt.sign(payload, config.secret, {
+	return jwt.sign(payload, config.secret, {
 		expiresIn: 604800, // 1 Week
 	});
-	return token;
 };
 
 const getPayload = token => {
