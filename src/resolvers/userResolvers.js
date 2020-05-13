@@ -15,6 +15,14 @@ const userResolvers = {
 				throw new AuthenticationError('Please Login Again!');
 			}
 		},
+		users: async(parent, args) => {
+			const users = await db.getCollection('user').find({username: args.searchTerm}).toArray()
+				.then(res => {
+					return res;
+				});
+			console.log(users)
+			return users;
+		},
 	},
 	Mutation: {
 		register: async(parent, args) => {

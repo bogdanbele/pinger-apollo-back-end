@@ -8,6 +8,7 @@ const query = gql`
 	type Query {
 		me: User
 		myEvents: [Event]
+		users(searchTerm: String!): [User]
 	}
 	type Mutation {
 		register(username: String!, password: String!): User
