@@ -15,12 +15,19 @@ const userResolvers = {
 				throw new AuthenticationError('Please Login Again!');
 			}
 		},
-		users: async(parent, args) => {
-			const users = await db.getCollection('user').find({username: args.searchTerm}).toArray()
+		getUsers: async(parent, args) => {
+			const {searchTerm} = args;
+			let searchQuery = {};
+
+			if (searchTerm) {
+				searchQuery = {username: {$regex: searchTerm, $options: 'i'}};
+			}
+
+			const users = await db.getCollection('user').find(searchQuery).toArray()
 				.then(res => {
 					return res;
 				});
-			console.log(users)
+			console.log(users);
 			return users;
 		},
 	},
