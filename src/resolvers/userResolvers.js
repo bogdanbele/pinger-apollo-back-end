@@ -16,16 +16,24 @@ const userResolvers = {
 			}
 		},
 		getUsers: async(parent, args) => {
-			const {searchTerm} = args;
+			const {searchTerm, page = 1, limit = 5} = args;
 			let searchQuery = {};
 
 			if (searchTerm) {
 				searchQuery = {username: {$regex: searchTerm, $options: 'i'}};
 			}
 
-			const users = await db.getCollection('user').find(searchQuery).toArray()
-				.then(res => {
-					return res;
+			const count = await db.getCollection('user').countDocuments(searchQuery);
+
+			const users = await db.getCollection('user').find(searchQuery).limit(limit)
+				.skip((page - 1) * limit).toArray()
+				.then(users => {
+					console.log(users);
+					return {
+						users,
+						totalPages: Math.ceil(count / limit),
+						currentPage: page,
+					};
 				});
 			console.log(users);
 			return users;

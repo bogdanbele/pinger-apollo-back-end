@@ -20,6 +20,14 @@ const inviteType = gql`
 		dateEnd: Date!
 	}
 `;
+const userResultType = gql`
+	type UsersResult {
+		users: [User]
+		currentPage: Int
+		totalPages: Int
+	}
+`;
+
 
 const eventType = gql`
 	type Event {
@@ -36,4 +44,5 @@ module.exports = {
 	userType,
 	eventType,
 	inviteType,
+	userResultType,
 };
