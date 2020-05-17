@@ -1,5 +1,7 @@
 const {getToken, encryptPassword, comparePassword} = require('../util');
 const db = require('../db');
+const ObjectId = require('mongodb').ObjectId;
+
 const {GraphQLScalarType, Kind} = require('graphql') ;
 
 const {
@@ -10,6 +12,7 @@ const userResolvers = {
 	Query: {
 		me: (parent, args, context) => {
 			if (context.loggedIn) {
+				console.log(context.user)
 				return context.user;
 			} else {
 				throw new AuthenticationError('Please Login Again!');
@@ -18,7 +21,6 @@ const userResolvers = {
 		getUsers: async(parent, args) => {
 			const {searchTerm, page = 1, limit = 5} = args;
 			let searchQuery = {};
-
 			if (searchTerm) {
 				searchQuery = {username: {$regex: searchTerm, $options: 'i'}};
 			}
@@ -40,11 +42,52 @@ const userResolvers = {
 		},
 	},
 	Mutation: {
+		createUserRelationship: async(parent, args, context) => {
+			const senderUser = context.user;
+
+			const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(args._id)});
+
+			const newReceiverUserRelationship = {
+				userId: receiverUser._id,
+				status: 1,
+				updatedAt: Date.now(),
+			};
+
+			const newSenderUserRelationship = {
+				userId: senderUser._id,
+				status: 0,
+				updatedAt: Date.now(),
+			};
+
+			console.log(receiverUser)
+
+			await db.getCollection('user').updateOne({_id: receiverUser._id}, {$set: {
+				relationships : [
+					newSenderUserRelationship,
+				],
+			}}).catch(e => {
+				console.log(e);
+			}).then(res =>
+				res);
+
+			await db.getCollection('user').updateOne({_id:senderUser._id}, {$set: {
+				relationships : [
+					newReceiverUserRelationship,
+				],
+			}}).catch(e => {
+				console.log(e);
+			}).then(res =>
+				res);
+
+			return 'good'
+
+		},
 		register: async(parent, args) => {
 			const newUser = {
 				username: args.username,
 				password: await encryptPassword(args.password),
-				createdAt: Date.now()};
+				createdAt: Date.now(),
+				relationships: []};
 			const user = await db.getCollection('user').findOne({username: args.username});
 			if (user) {
 				throw new AuthenticationError('User Already Exists!');

@@ -6,6 +6,7 @@ const userType = gql`
 		username: String!
 		password: String!
 		token: String
+		relationships: [UserRelationship]
 		createdAt: Date!
 	}
 `;
@@ -28,6 +29,39 @@ const userResultType = gql`
 	}
 `;
 
+// status
+// 0 - pending      -- sent by user 1
+// 1 - awaitingResponse     -- received by user 2
+// 2 - accepted
+// 3 - declined
+// 4 - blocked
+
+/*
+	User 1 sends a friend request to User 2
+	UserRelationShip Created for User 1 with status: 0
+	UserRelationShip Created for User 2 with status: 1
+
+	User 2 responds with status 2
+	UserRelationShip Updated for both users with status: 2
+
+	User 2 responds with status 3
+	UserRelationShip Updated for both users with status: 3
+
+
+
+
+
+
+ */
+
+const userRelationship = gql`
+	type UserRelationship {
+		userId: ID!
+		status: Int!
+        updatedAt: Date!
+    }
+`;
+
 
 const eventType = gql`
 	type Event {
@@ -45,4 +79,5 @@ module.exports = {
 	eventType,
 	inviteType,
 	userResultType,
+	userRelationship,
 };

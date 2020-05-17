@@ -15,6 +15,7 @@ const query = gql`
 		login(username: String!, password: String!): User
 		createEvent(title: String!, description: String!, scheduledAt: Date): Event
 		deleteEvent(_id: ID!): String!
+        createUserRelationship(_id: ID!): String!
 	}
 `;
 
