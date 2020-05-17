@@ -47,19 +47,6 @@ const userResolvers = {
 
 			const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(args._id)});
 
-			const newReceiverUserRelationship = {
-				userId: ObjectId(receiverUser._id),
-				status: 2,
-				updatedAt: Date.now(),
-			};
-
-			const newSenderUserRelationship = {
-				userId: ObjectId(senderUser._id),
-				status: 2,
-				updatedAt: Date.now(),
-			};
-
-
 			const isReceiverPartOfSender = senderUser.relationships.filter(x =>
 				x.userId.toString() === receiverUser._id.toString()
 			);
@@ -67,29 +54,39 @@ const userResolvers = {
 			const isSenderPartOfReceiver = receiverUser.relationships.filter(x =>
 				x.userId.toString() === senderUser._id.toString());
 
-			console.log(isReceiverPartOfSender);
-			console.log(isSenderPartOfReceiver);
 
-			if (isReceiverPartOfSender || isSenderPartOfReceiver) {
+			if (isReceiverPartOfSender.length !== 0 || isSenderPartOfReceiver.length !== 0) {
 				return 'already requested';
 			}
 
+			const newReceiverUserRelationship = {
+				userId: ObjectId(receiverUser._id),
+				status: 0,
+				updatedAt: Date.now(),
+			};
+
+			const newSenderUserRelationship = {
+				userId: ObjectId(senderUser._id),
+				status: 1,
+				updatedAt: Date.now(),
+			};
+
 			await db.getCollection('user').updateOne({_id: receiverUser._id}, {
-				$set: {
-					relationships: [
-						newSenderUserRelationship,
-					],
+				$push: {
+					relationships: {
+						...newSenderUserRelationship,
+					},
 				},
 			}).catch(e => {
 				console.log(e);
 			}).then(res =>
 				res);
 
-			await db.getCollection('user').updateOne({_id: senderUser._id}, {
-				$set: {
-					relationships: [
-						newReceiverUserRelationship,
-					],
+			await db.getCollection('user').updateOne({_id: ObjectId(senderUser._id)}, {
+				$push: {
+					relationships: {
+						...newReceiverUserRelationship,
+					},
 				},
 			}).catch(e => {
 				console.log(e);
