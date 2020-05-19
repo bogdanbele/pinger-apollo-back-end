@@ -10,29 +10,28 @@ const {
 
 const userResolvers = {
 	Query: {
-		me: async(parent, args, context) => {
+		me: async (parent, args, context) => {
 			if (context.loggedIn) {
 				const {page = 1, limit = 5} = args;
 
-				console.log(context.user);
 				const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
-				console.log(receiverUser);
 
+				const {relationships} = receiverUser;
 
-				const userRel = receiverUser.relationships;
-				userRel.map(elem =>
-					console.log(elem.userId)
-				);
-
-
-				const userByIds = userRel.map(elem =>
+				const userByIds = relationships.map(elem =>
 					elem.userId
 				);
 
 				const searchQuery = {_id: {$in: userByIds}};
 
-				const count = await db.getCollection('user').countDocuments(searchQuery);
-				const {users} = await db.getCollection('user').find(searchQuery).limit(limit).skip((page - 1) * limit).toArray()
+				const count = await db.getCollection('user')
+					.countDocuments(searchQuery);
+
+				const {users} = await db.getCollection('user')
+					.find(searchQuery)
+					.limit(limit)
+					.skip((page - 1) * limit)
+					.toArray()
 					.then(users => {
 						return {
 							users,
@@ -41,37 +40,20 @@ const userResolvers = {
 						};
 					});
 
+				const newRelationshipObject = relationships.map(elem => ({
+					user: users.filter(x => x._id.toString() === elem.userId.toString())[0],
+					status: elem.status,
+					updatedAt: elem.updatedAt,
+				}));
 
-				console.log(users);
-
-				const extendedResponse = userRel.map(elem => {
-					/*					console.log('---- begin -----');
-					console.log(users.users.filter(x => {
-						console.log('x')
-						console.log(x.userId)
-						console.log('x')
-						console.log('elem._id')
-						console.log(elem._id)
-						console.log('elem._id')
-						return x.userId === elem;
-					}));
-					console.log('---- end -----');*/
-
-					return {
-						user: users.filter(x => x._id.toString() === elem.userId.toString())[0],
-						status: elem.status,
-						updatedAt: elem.updatedAt,
-					};
-				});
-
-				console.log(extendedResponse);
+				console.log(newRelationshipObject);
 
 				return receiverUser;
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
 		},
-		getUsers: async(parent, args) => {
+		getUsers: async (parent, args) => {
 			const {searchTerm, page = 1, limit = 5} = args;
 			let searchQuery = {};
 			if (searchTerm) {
@@ -95,7 +77,7 @@ const userResolvers = {
 		},
 	},
 	Mutation: {
-		createUserRelationship: async(parent, args, context) => {
+		createUserRelationship: async (parent, args, context) => {
 			const senderUser = context.user;
 
 			const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(args._id)});
@@ -149,7 +131,7 @@ const userResolvers = {
 			return 'good';
 
 		},
-		register: async(parent, args) => {
+		register: async (parent, args) => {
 			const newUser = {
 				username: args.username,
 				password: await encryptPassword(args.password),
@@ -164,7 +146,7 @@ const userResolvers = {
 			const token = getToken(regUser);
 			return {...regUser, token};
 		},
-		login: async(parent, args) => {
+		login: async (parent, args) => {
 			try {
 				const user = await db.getCollection('user').findOne({username: args.username});
 				const isMatch = await comparePassword(args.password, user.password);
