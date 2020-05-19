@@ -10,10 +10,11 @@ const {
 
 const userResolvers = {
 	Query: {
-		me: (parent, args, context) => {
+		me: async(parent, args, context) => {
 			if (context.loggedIn) {
 				console.log(context.user);
-				return context.user;
+				const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+				return receiverUser;
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
