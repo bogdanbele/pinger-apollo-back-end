@@ -12,8 +12,60 @@ const userResolvers = {
 	Query: {
 		me: async(parent, args, context) => {
 			if (context.loggedIn) {
+				const {page = 1, limit = 5} = args;
+
 				console.log(context.user);
 				const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+				console.log(receiverUser);
+
+
+				const userRel = receiverUser.relationships;
+				userRel.map(elem =>
+					console.log(elem.userId)
+				);
+
+
+				const userByIds = userRel.map(elem =>
+					elem.userId
+				);
+
+				const searchQuery = {_id: {$in: userByIds}};
+
+				const count = await db.getCollection('user').countDocuments(searchQuery);
+				const {users} = await db.getCollection('user').find(searchQuery).limit(limit).skip((page - 1) * limit).toArray()
+					.then(users => {
+						return {
+							users,
+							totalPages: Math.ceil(count / limit),
+							currentPage: page,
+						};
+					});
+
+
+				console.log(users);
+
+				const extendedResponse = userRel.map(elem => {
+					/*					console.log('---- begin -----');
+					console.log(users.users.filter(x => {
+						console.log('x')
+						console.log(x.userId)
+						console.log('x')
+						console.log('elem._id')
+						console.log(elem._id)
+						console.log('elem._id')
+						return x.userId === elem;
+					}));
+					console.log('---- end -----');*/
+
+					return {
+						user: users.filter(x => x._id.toString() === elem.userId.toString())[0],
+						status: elem.status,
+						updatedAt: elem.updatedAt,
+					};
+				});
+
+				console.log(extendedResponse);
+
 				return receiverUser;
 			} else {
 				throw new AuthenticationError('Please Login Again!');
