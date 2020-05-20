@@ -60,6 +60,12 @@ const userRelationship = gql`
 		status: Int!
         updatedAt: Date!
     }
+	
+	type ExtendedUserRelationship {
+		user: User!
+		status: Int!
+        updatedAt: Date!
+	}
 `;
 
 

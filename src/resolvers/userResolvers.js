@@ -12,46 +12,50 @@ const userResolvers = {
 	Query: {
 		me: async (parent, args, context) => {
 			if (context.loggedIn) {
-				const {page = 1, limit = 5} = args;
-
-				const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
-
-				const {relationships} = receiverUser;
-
-				const userByIds = relationships.map(elem =>
-					elem.userId
-				);
-
-				const searchQuery = {_id: {$in: userByIds}};
-
-				const count = await db.getCollection('user')
-					.countDocuments(searchQuery);
-
-				const {users} = await db.getCollection('user')
-					.find(searchQuery)
-					.limit(limit)
-					.skip((page - 1) * limit)
-					.toArray()
-					.then(users => {
-						return {
-							users,
-							totalPages: Math.ceil(count / limit),
-							currentPage: page,
-						};
-					});
-
-				const newRelationshipObject = relationships.map(elem => ({
-					user: users.filter(x => x._id.toString() === elem.userId.toString())[0],
-					status: elem.status,
-					updatedAt: elem.updatedAt,
-				}));
-
-				console.log(newRelationshipObject);
-
-				return receiverUser;
+				return await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
+		},
+		myRelationships: async (parent, args, context) => {
+			if (!context.loggedIn) {
+				throw new AuthenticationError('Please Login Again!');
+			}
+			const {page = 1, limit = 5, status = [0, 1, 2, 3]} = args;
+
+			const {relationships} = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+
+			const filteredUsers = relationships
+				.filter(userRelationship =>
+					status.includes(userRelationship.status));
+
+			const userByIds = filteredUsers.map(elem =>
+				elem.userId
+			);
+
+			const searchQuery = {_id: {$in: userByIds}};
+
+			const count = await db.getCollection('user')
+				.countDocuments(searchQuery);
+
+			const {users} = await db.getCollection('user')
+				.find(searchQuery)
+				.limit(limit)
+				.skip((page - 1) * limit)
+				.toArray()
+				.then(users => {
+					return {
+						users,
+						totalPages: Math.ceil(count / limit),
+						currentPage: page,
+					};
+				});
+
+			return filteredUsers.map(elem => ({
+				user: users.filter(x => x._id.toString() === elem.userId.toString())[0],
+				status: elem.status,
+				updatedAt: elem.updatedAt,
+			}));
 		},
 		getUsers: async (parent, args) => {
 			const {searchTerm, page = 1, limit = 5} = args;
