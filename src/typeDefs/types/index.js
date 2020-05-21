@@ -21,11 +21,21 @@ const inviteType = gql`
 		dateEnd: Date!
 	}
 `;
+
+
+
+
 const userResultType = gql`
 	type UsersResult {
 		users: [User]
 		currentPage: Int
 		totalPages: Int
+	}
+	
+	type UserStatusResult {
+		users : [UserStatus]
+        currentPage: Int
+        totalPages: Int
 	}
 `;
 
@@ -47,11 +57,6 @@ const userResultType = gql`
 	User 2 responds with status 3
 	UserRelationShip Updated for both users with status: 3
 
-
-
-
-
-
  */
 
 const userRelationship = gql`
@@ -65,6 +70,11 @@ const userRelationship = gql`
 		user: User!
 		status: Int!
         updatedAt: Date!
+	}
+	
+	type UserStatus {
+		user: User!
+		status: Int
 	}
 `;
 

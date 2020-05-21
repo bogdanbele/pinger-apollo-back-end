@@ -10,6 +10,7 @@ const query = gql`
 		myEvents: [Event]
 		myRelationships(status: [Int]): [ExtendedUserRelationship]
         getUsers(searchTerm: String, page: Int, limit: Int): UsersResult
+        getUsersWithStatus(searchTerm: String, page: Int, limit: Int): UserStatusResult
 	}
 	type Mutation {
 		register(username: String!, password: String!): User

@@ -10,14 +10,14 @@ const {
 
 const userResolvers = {
 	Query: {
-		me: async (parent, args, context) => {
+		me: async(parent, args, context) => {
 			if (context.loggedIn) {
 				return await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
 		},
-		myRelationships: async (parent, args, context) => {
+		myRelationships: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -57,7 +57,58 @@ const userResolvers = {
 				updatedAt: elem.updatedAt,
 			}));
 		},
-		getUsers: async (parent, args) => {
+		getUsersWithStatus: async(parent, args, context) => {
+			if (!context.loggedIn) {
+				throw new AuthenticationError('Please Login Again!');
+			}
+			const {searchTerm, page = 1, limit = 5} = args;
+			let searchQuery = {};
+			if (searchTerm) {
+				searchQuery = {username: {$regex: searchTerm, $options: 'i'}};
+			}
+
+			const {relationships} = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+
+			const userByIds = relationships.map(elem =>
+				elem.userId.toString()
+			);
+
+			console.log(userByIds);
+
+
+			const count = await db.getCollection('user').countDocuments(searchQuery);
+
+			const users = await db.getCollection('user').find(searchQuery).limit(limit)
+				.skip((page - 1) * limit).toArray()
+				.then(users => {
+					const usersWithStatus = users.map(user => {
+						console.log(userByIds.includes(user._id.toString()));
+						return {
+							user,
+							status:
+								userByIds.includes(user._id.toString())
+									? relationships.filter(x => x.userId.toString() === user._id.toString())[0].status
+									: 0,
+						};
+					});
+
+
+					return {
+						users: usersWithStatus,
+						totalPages: Math.ceil(count / limit),
+						currentPage: page,
+					};
+				});
+
+			console.log(users);
+
+			return users;
+
+		},
+		getUsers: async(parent, args, context) => {
+			if (!context.loggedIn) {
+				throw new AuthenticationError('Please Login Again!');
+			}
 			const {searchTerm, page = 1, limit = 5} = args;
 			let searchQuery = {};
 			if (searchTerm) {
@@ -81,7 +132,10 @@ const userResolvers = {
 		},
 	},
 	Mutation: {
-		createUserRelationship: async (parent, args, context) => {
+		createUserRelationship: async(parent, args, context) => {
+			if (!context.loggedIn) {
+				throw new AuthenticationError('Please Login Again!');
+			}
 			const senderUser = context.user;
 
 			const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(args._id)});
@@ -135,7 +189,7 @@ const userResolvers = {
 			return 'good';
 
 		},
-		register: async (parent, args) => {
+		register: async(parent, args) => {
 			const newUser = {
 				username: args.username,
 				password: await encryptPassword(args.password),
@@ -150,7 +204,7 @@ const userResolvers = {
 			const token = getToken(regUser);
 			return {...regUser, token};
 		},
-		login: async (parent, args) => {
+		login: async(parent, args) => {
 			try {
 				const user = await db.getCollection('user').findOne({username: args.username});
 				const isMatch = await comparePassword(args.password, user.password);
