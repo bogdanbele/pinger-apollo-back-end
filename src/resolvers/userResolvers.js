@@ -52,7 +52,7 @@ const userResolvers = {
 				});
 
 			return filteredUsers.map(elem => ({
-				user: users.filter(x => x._id.toString() === elem.userId.toString())[0],
+				user: users.filter(x => x._id.equals(elem.userId))[0],
 				status: elem.status,
 				updatedAt: elem.updatedAt,
 			}));
@@ -82,13 +82,13 @@ const userResolvers = {
 				.skip((page - 1) * limit).toArray()
 				.then(users => {
 					const usersWithStatus = users.map(user => {
-						console.log(userByIds.includes(user._id.toString()));
+
 						return {
 							user,
 							status:
 								userByIds.includes(user._id.toString())
-									? relationships.filter(x => x.userId.toString() === user._id.toString())[0].status
-									: 0,
+									? relationships.filter(x => x.userId.equals(user._id))[0].status
+									: null,
 						};
 					});
 
