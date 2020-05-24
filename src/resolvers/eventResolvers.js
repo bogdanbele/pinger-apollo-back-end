@@ -1,6 +1,6 @@
+const {eventsDao} = require('../dao/eventsDao');
 const {statuses} = require('../helpers/errorHandlers');
 
-const db = require('../db');
 const ObjectId = require('mongodb').ObjectId;
 
 const {AuthenticationError} = require('apollo-server');
@@ -11,11 +11,8 @@ const eventResolvers = {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
-			return (await db.getCollection('events').find({eventCreator: context.user._id}))
-				.toArray()
-				.then(res => {
-					return res;
-				});
+
+			return await eventsDao.getEvents({eventCreator: context.user._id});
 		},
 	},
 	Mutation: {
@@ -33,16 +30,16 @@ const eventResolvers = {
 				createdAt: Date.now(),
 				scheduledAt,
 			};
-			return (await db.getCollection('events').insertOne(newEvent)).ops[0];
+			return (await eventsDao.insertEvent(newEvent)).ops[0];
 		},
 		deleteEvent: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
 
-			const event = await db.getCollection('events').findOne({_id: ObjectId(args._id)});
+			const event = await eventsDao.getEvent({_id: ObjectId(args._id)});
 			if (event) {
-				await db.getCollection('events').deleteOne(event);
+				await eventsDao.deleteEvent(event);
 				return statuses.SUCCESS;
 			} else {
 				return statuses.NO_MATCH;

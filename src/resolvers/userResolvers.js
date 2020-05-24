@@ -1,5 +1,5 @@
 const {getToken, encryptPassword, comparePassword} = require('../util');
-const db = require('../db');
+const db = require('../dao/db');
 const ObjectId = require('mongodb').ObjectId;
 
 const {GraphQLScalarType, Kind} = require('graphql');
@@ -64,7 +64,7 @@ const userResolvers = {
 			const {searchTerm, page = 1, limit = 5} = args;
 			let searchQuery = {};
 			if (searchTerm) {
-				searchQuery = {username: {$regex: searchTerm, $options: 'i'}};
+				searchQuery = {username: {$regex: searchTerm, $options: 'i'}, _id: {$ne: ObjectId(context.user._id)}};
 			}
 
 			const {relationships} = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
@@ -76,13 +76,15 @@ const userResolvers = {
 			console.log(userByIds);
 
 
-			const count = await db.getCollection('user').countDocuments(searchQuery);
+			const count = await db.getCollection('user')
+				.countDocuments(searchQuery);
 
-			const users = await db.getCollection('user').find(searchQuery).limit(limit)
+			const users = await db.getCollection('user')
+				.find(searchQuery)
+				.limit(limit)
 				.skip((page - 1) * limit).toArray()
 				.then(users => {
 					const usersWithStatus = users.map(user => {
-
 						return {
 							user,
 							status:

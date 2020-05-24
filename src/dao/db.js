@@ -19,6 +19,8 @@ exports.connect = (url, done) => {
 
 exports.getCollection = collectionName =>  state.db.collection(collectionName);
 
+exports.events = () => state.db.collection('events');
+
 exports.getDB = () => state.db;
 
 exports.close = done => {

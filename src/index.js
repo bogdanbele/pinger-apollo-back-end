@@ -2,7 +2,7 @@ const {ApolloServer} = require('apollo-server');
 const {typeDefs} = require('./typeDefs');
 const {resolvers} = require('./resolvers');
 const {getPayload} = require('./util');
-const db = require('./db');
+const db = require('./dao/db');
 require('dotenv').config();
 
 const server = new ApolloServer({
