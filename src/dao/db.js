@@ -21,6 +21,8 @@ exports.getCollection = collectionName =>  state.db.collection(collectionName);
 
 exports.events = () => state.db.collection('events');
 
+exports.users = () => state.db.collection('user');
+
 exports.getDB = () => state.db;
 
 exports.close = done => {

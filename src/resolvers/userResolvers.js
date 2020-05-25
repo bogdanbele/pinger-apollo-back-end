@@ -1,4 +1,6 @@
 const {getToken, encryptPassword, comparePassword} = require('../util');
+const {usersDao} = require('../dao/usersDao');
+
 const db = require('../dao/db');
 const ObjectId = require('mongodb').ObjectId;
 
@@ -12,7 +14,7 @@ const userResolvers = {
 	Query: {
 		me: async(parent, args, context) => {
 			if (context.loggedIn) {
-				return await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+				return await usersDao.getUser({_id: ObjectId(context.user._id)});
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -23,7 +25,7 @@ const userResolvers = {
 			}
 			const {page = 1, limit = 5, status = [0, 1, 2, 3]} = args;
 
-			const {relationships} = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+			const {relationships} = await usersDao.getUser({_id: ObjectId(context.user._id)});
 
 			const filteredUsers = relationships
 				.filter(userRelationship =>
