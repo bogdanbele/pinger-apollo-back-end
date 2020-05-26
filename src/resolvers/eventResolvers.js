@@ -12,7 +12,7 @@ const eventResolvers = {
 				throw new AuthenticationError('Please Login Again!');
 			}
 
-			return await eventsDao.getEvents({eventCreator: context.user._id});
+			return await eventsDao.fetchEvents({eventCreator: context.user._id});
 		},
 	},
 	Mutation: {
@@ -30,14 +30,14 @@ const eventResolvers = {
 				createdAt: Date.now(),
 				scheduledAt,
 			};
-			return (await eventsDao.insertEvent(newEvent)).ops[0];
+			return (await eventsDao.createEvent(newEvent)).ops[0];
 		},
 		deleteEvent: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
 
-			const event = await eventsDao.getEvent({_id: ObjectId(args._id)});
+			const event = await eventsDao.fetchEvent({_id: ObjectId(args._id)});
 			if (event) {
 				await eventsDao.deleteEvent(event);
 				return statuses.SUCCESS;
