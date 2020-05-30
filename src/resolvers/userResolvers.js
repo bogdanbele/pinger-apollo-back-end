@@ -50,6 +50,7 @@ const userResolvers = {
 						users,
 						totalPages: Math.ceil(count / limit),
 						currentPage: page,
+						count,
 					};
 				});
 

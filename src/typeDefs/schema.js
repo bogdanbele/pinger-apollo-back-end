@@ -1,7 +1,7 @@
-const {query} = require('./query');
-const {userType, eventType, userResultType, userRelationship} = require('./types');
+const {query} = require('./types/query');
+const {userType, eventType} = require('./types');
 
-const typeDefs = [query, userType, eventType, userResultType, userRelationship] ;
+const typeDefs = [query, userType, eventType] ;
 
 module.exports = {
 	typeDefs,
