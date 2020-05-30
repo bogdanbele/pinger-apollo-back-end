@@ -22,9 +22,6 @@ const inviteType = gql`
 	}
 `;
 
-
-
-
 const userResultType = gql`
 	type UsersResult {
 		users: [User]

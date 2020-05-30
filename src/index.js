@@ -1,5 +1,5 @@
 const {ApolloServer} = require('apollo-server');
-const {typeDefs} = require('./typeDefs');
+const {typeDefs} = require('./typeDefs/schema.js');
 const {resolvers} = require('./resolvers');
 const {getPayload} = require('./util');
 const db = require('./dao/db');
