@@ -12,7 +12,6 @@ const server = new ApolloServer({
 		apiKey: process.env.APOLLO_KEY,
 	},
 	context: ({req}) => {
-
 		// Connect to DB
 		db.connect(process.env.MONGO_DB_URI, err => {
 			if (err) {

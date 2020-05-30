@@ -14,7 +14,7 @@ const userResolvers = {
 	Query: {
 		me: async(parent, args, context) => {
 			if (context.loggedIn) {
-				return await usersDao.getUser({_id: ObjectId(context.user._id)});
+				return await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -25,7 +25,7 @@ const userResolvers = {
 			}
 			const {page = 1, limit = 5, status = [0, 1, 2, 3]} = args;
 
-			const {relationships} = await usersDao.getUser({_id: ObjectId(context.user._id)});
+			const {relationships} = await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 
 			const filteredUsers = relationships
 				.filter(userRelationship =>
@@ -40,11 +40,8 @@ const userResolvers = {
 			const count = await db.getCollection('user')
 				.countDocuments(searchQuery);
 
-			const {users} = await db.getCollection('user')
-				.find(searchQuery)
-				.limit(limit)
-				.skip((page - 1) * limit)
-				.toArray()
+			// userDao.getUsers(searchQuery,limit,page)
+			const {users} = await usersDao.fetchUsers(searchQuery,limit,page)
 				.then(users => {
 					return {
 						users,
