@@ -12,14 +12,14 @@ const {
 
 const userResolvers = {
 	Query: {
-		me: async(parent, args, context) => {
+		me: async (parent, args, context) => {
 			if (context.loggedIn) {
 				return await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
 		},
-		myRelationships: async(parent, args, context) => {
+		myRelationships: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -41,23 +41,29 @@ const userResolvers = {
 				.countDocuments(searchQuery);
 
 			// userDao.getUsers(searchQuery,limit,page)
-			const {users} = await usersDao.fetchUsers(searchQuery,limit,page)
+			const {users, totalPages, currentPage} = await usersDao.fetchUsers(searchQuery, limit, page)
 				.then(users => {
 					return {
 						users,
 						totalPages: Math.ceil(count / limit),
 						currentPage: page,
-						count,
 					};
 				});
 
-			return filteredUsers.map(elem => ({
+			const usersWithRelationships = filteredUsers.map(elem => ({
 				user: users.filter(x => x._id.equals(elem.userId))[0],
 				status: elem.status,
 				updatedAt: elem.updatedAt,
 			}));
+
+			return {
+				users: usersWithRelationships,
+				count,
+				totalPages,
+				currentPage,
+			};
 		},
-		getUsersWithStatus: async(parent, args, context) => {
+		getUsersWithStatus: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -107,7 +113,7 @@ const userResolvers = {
 			return users;
 
 		},
-		getUsers: async(parent, args, context) => {
+		getUsers: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -134,7 +140,7 @@ const userResolvers = {
 		},
 	},
 	Mutation: {
-		createUserRelationship: async(parent, args, context) => {
+		createUserRelationship: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -191,7 +197,7 @@ const userResolvers = {
 			return 'good';
 
 		},
-		register: async(parent, args) => {
+		register: async (parent, args) => {
 			const newUser = {
 				username: args.username,
 				password: await encryptPassword(args.password),
@@ -206,7 +212,7 @@ const userResolvers = {
 			const token = getToken(regUser);
 			return {...regUser, token};
 		},
-		login: async(parent, args) => {
+		login: async (parent, args) => {
 			try {
 				const user = await db.getCollection('user').findOne({username: args.username});
 				const isMatch = await comparePassword(args.password, user.password);

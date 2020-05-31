@@ -52,7 +52,13 @@ const userType = gql`
         user: User!
         status: Int!
         updatedAt: Date!
+    }
+    
+    type MyRelationshipsResponse {
+        users :[ExtendedUserRelationship]
         count: Int!
+        totalPages: Int!
+        currentPage: Int!
     }
 
     type UserStatus {
