@@ -1,7 +1,5 @@
 const {getToken, encryptPassword, comparePassword} = require('../util');
 const {usersDao} = require('../dao/usersDao');
-
-const db = require('../dao/db');
 const ObjectId = require('mongodb').ObjectId;
 
 const {GraphQLScalarType, Kind} = require('graphql');
@@ -12,14 +10,14 @@ const {
 
 const userResolvers = {
 	Query: {
-		me: async (parent, args, context) => {
+		me: async(parent, args, context) => {
 			if (context.loggedIn) {
 				return await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 			} else {
 				throw new AuthenticationError('Please Login Again!');
 			}
 		},
-		myRelationships: async (parent, args, context) => {
+		myRelationships: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -37,18 +35,9 @@ const userResolvers = {
 
 			const searchQuery = {_id: {$in: userByIds}};
 
-			const count = await db.getCollection('user')
-				.countDocuments(searchQuery);
+			const count = await usersDao.countUsers(searchQuery);
 
-			// userDao.getUsers(searchQuery,limit,page)
-			const {users, totalPages, currentPage} = await usersDao.fetchUsers(searchQuery, limit, page)
-				.then(users => {
-					return {
-						users,
-						totalPages: Math.ceil(count / limit),
-						currentPage: page,
-					};
-				});
+			const users = await usersDao.fetchUsers(searchQuery, limit, page);
 
 			const usersWithRelationships = filteredUsers.map(elem => ({
 				user: users.filter(x => x._id.equals(elem.userId))[0],
@@ -59,11 +48,11 @@ const userResolvers = {
 			return {
 				users: usersWithRelationships,
 				count,
-				totalPages,
-				currentPage,
+				totalPages: Math.ceil(count / limit),
+				currentPage: page,
 			};
 		},
-		getUsersWithStatus: async (parent, args, context) => {
+		getUsersWithStatus: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -73,47 +62,31 @@ const userResolvers = {
 				searchQuery = {username: {$regex: searchTerm, $options: 'i'}, _id: {$ne: ObjectId(context.user._id)}};
 			}
 
-			const {relationships} = await db.getCollection('user').findOne({_id: ObjectId(context.user._id)});
+			const {relationships} = await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 
 			const userByIds = relationships.map(elem =>
 				elem.userId.toString()
 			);
 
-			console.log(userByIds);
+			const count = await usersDao.countUsers(searchQuery);
 
+			const users = await usersDao.fetchUsers(searchQuery, limit, page)
+				.then(users => users.map(user => ({
+					user,
+					status:
+							userByIds.includes(user._id.toString())
+								? relationships.filter(x => x.userId.equals(user._id))[0].status
+								: null,
+				})
+				));
 
-			const count = await db.getCollection('user')
-				.countDocuments(searchQuery);
-
-			const users = await db.getCollection('user')
-				.find(searchQuery)
-				.limit(limit)
-				.skip((page - 1) * limit).toArray()
-				.then(users => {
-					const usersWithStatus = users.map(user => {
-						return {
-							user,
-							status:
-								userByIds.includes(user._id.toString())
-									? relationships.filter(x => x.userId.equals(user._id))[0].status
-									: null,
-						};
-					});
-
-
-					return {
-						users: usersWithStatus,
-						totalPages: Math.ceil(count / limit),
-						currentPage: page,
-					};
-				});
-
-			console.log(users);
-
-			return users;
-
+			return {
+				users,
+				totalPages: Math.ceil(count / limit),
+				currentPage: page,
+			};
 		},
-		getUsers: async (parent, args, context) => {
+		getUsers: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -123,30 +96,26 @@ const userResolvers = {
 				searchQuery = {username: {$regex: searchTerm, $options: 'i'}};
 			}
 
-			const count = await db.getCollection('user').countDocuments(searchQuery);
+			const count = await usersDao.countUsers(searchQuery);
 
-			const users = await db.getCollection('user').find(searchQuery).limit(limit)
-				.skip((page - 1) * limit).toArray()
-				.then(users => {
-					console.log(users);
-					return {
-						users,
-						totalPages: Math.ceil(count / limit),
-						currentPage: page,
-					};
-				});
+			const users = await usersDao.fetchUsers(searchQuery, limit, page);
+
 			console.log(users);
-			return users;
+			return {
+				users,
+				totalPages: Math.ceil(count / limit),
+				currentPage: page,
+			};
 		},
 	},
 	Mutation: {
-		createUserRelationship: async (parent, args, context) => {
+		createUserRelationship: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
 			const senderUser = context.user;
 
-			const receiverUser = await db.getCollection('user').findOne({_id: ObjectId(args._id)});
+			const receiverUser = await usersDao.fetchUser({_id: ObjectId(args._id)});
 
 			const isReceiverPartOfSender = senderUser.relationships.filter(x =>
 				x.userId.toString() === receiverUser._id.toString()
@@ -172,7 +141,7 @@ const userResolvers = {
 				updatedAt: Date.now(),
 			};
 
-			await db.getCollection('user').updateOne({_id: receiverUser._id}, {
+			await usersDao.updateUser({_id: receiverUser._id}, {
 				$push: {
 					relationships: {
 						...newSenderUserRelationship,
@@ -180,10 +149,9 @@ const userResolvers = {
 				},
 			}).catch(e => {
 				console.log(e);
-			}).then(res =>
-				res);
+			});
 
-			await db.getCollection('user').updateOne({_id: ObjectId(senderUser._id)}, {
+			await usersDao.updateUser({_id: ObjectId(senderUser._id)}, {
 				$push: {
 					relationships: {
 						...newReceiverUserRelationship,
@@ -197,24 +165,24 @@ const userResolvers = {
 			return 'good';
 
 		},
-		register: async (parent, args) => {
+		register: async(parent, args) => {
 			const newUser = {
 				username: args.username,
 				password: await encryptPassword(args.password),
 				createdAt: Date.now(),
 				relationships: [],
 			};
-			const user = await db.getCollection('user').findOne({username: args.username});
+			const user = await usersDao.fetchUser({username: args.username});
 			if (user) {
 				throw new AuthenticationError('User Already Exists!');
 			}
-			const regUser = (await db.getCollection('user').insertOne(newUser)).ops[0];
+			const regUser = (await usersDao.insertUser(newUser)).ops[0];
 			const token = getToken(regUser);
 			return {...regUser, token};
 		},
-		login: async (parent, args) => {
+		login: async(parent, args) => {
 			try {
-				const user = await db.getCollection('user').findOne({username: args.username});
+				const user = await usersDao.fetchUser({username: args.username});
 				const isMatch = await comparePassword(args.password, user.password);
 				if (!isMatch) {
 					return new UserInputError('Wrong Password!');
