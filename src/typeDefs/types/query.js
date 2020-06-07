@@ -18,6 +18,7 @@ const query = gql`
         createEvent(title: String!, description: String!, scheduledAt: Date): Event
         deleteEvent(_id: ID!): String!
         createUserRelationship(_id: ID!): String!
+        updateUserRelationship(_id: ID!, status: Int!): String!
     }
 `;
 
