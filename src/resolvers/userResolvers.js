@@ -36,6 +36,7 @@ const userResolvers = {
 			const searchQuery = {_id: {$in: userByIds}};
 			const count = await usersDao.countUsers(searchQuery);
 
+			// Response from the Database
 			const usersResponse = await usersDao.fetchUsers(searchQuery, limit, page);
 
 			// Ids of paginated usersResponse from response
@@ -43,6 +44,10 @@ const userResolvers = {
 				elem._id.toString()
 			);
 
+			// If the relationships array contains 20 elements, and we have a limit of 5,
+			// the elements after the first 5 will be null, because our database
+			// query only returned the first 5. Despite this, our current's
+			// user {myRelationship} can return more than 5.
 			const paginatedUsers = usersFilteredByStatus.filter(user => {
 				return usersResponseById.includes(user.userId.toString());
 			});
@@ -121,6 +126,9 @@ const userResolvers = {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
+			if (![-1,2].includes(args.status)) {
+				return 'Error: Invalid Status';
+			}
 			const senderUser = await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 
 			const receiverUser = await usersDao.fetchUser({_id: ObjectId(args._id)});
@@ -134,16 +142,8 @@ const userResolvers = {
 
 
 			if (isReceiverPartOfSender.length !== 1 || isSenderPartOfReceiver.length !== 1) {
-				return 'no relationship';
+				return 'Error: no relationship';
 			}
-
-			await usersDao.updateUser({_id: receiverUser._id, 'relationships.userId': senderUser._id}, {
-				$set: {
-					'relationships.$.status': args.status,
-				},
-			}).catch(e => {
-				console.log(e);
-			});
 
 			await usersDao.updateUser({_id: senderUser._id, 'relationships.userId': receiverUser._id}, {
 				$set: {
@@ -153,10 +153,27 @@ const userResolvers = {
 				console.log(e);
 			});
 
-
-			return 'relationship';
-
-
+			if (args.status === -1) {
+				console.log('here');
+				await usersDao.updateUser({_id: receiverUser._id, 'relationships.userId': senderUser._id}, {
+					$set: {
+						// updating status to -2 lets us differentiate from a sent block and
+						// a received block.
+						'relationships.$.status': -2,
+					},
+				}).catch(e => {
+					console.log(e);
+				});
+				return 'Success';
+			}
+			await usersDao.updateUser({_id: receiverUser._id, 'relationships.userId': senderUser._id}, {
+				$set: {
+					'relationships.$.status': args.status,
+				},
+			}).catch(e => {
+				console.log(e);
+			});
+			return 'Success';
 		}
 		,
 		createUserRelationship: async(parent, args, context) => {

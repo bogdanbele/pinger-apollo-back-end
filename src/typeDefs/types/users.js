@@ -1,11 +1,13 @@
 const {gql} = require('apollo-server');
 
 // status
+
+// -2 - blockedBy -- blocked by user 1
+// -1 - blocked  --- blocking user 2
 // 0 - pending      -- sent by user 1
 // 1 - awaitingResponse     -- received by user 2
 // 2 - accepted
-// 3 - declined
-// 4 - blocked
+
 
 /*
 	User 1 sends a friend request to User 2
