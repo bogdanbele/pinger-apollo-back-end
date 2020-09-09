@@ -126,7 +126,7 @@ const userResolvers = {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
-			if (![-1,2].includes(args.status)) {
+			if (![-1, 2].includes(args.status)) {
 				return 'Error: Invalid Status';
 			}
 			const senderUser = await usersDao.fetchUser({_id: ObjectId(context.user._id)});
@@ -174,13 +174,12 @@ const userResolvers = {
 				console.log(e);
 			});
 			return 'Success';
-		}
-		,
-		createUserRelationship: async(parent, args, context) => {
+		},
+		deleteUserRelationship: async(parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
-			const senderUser = context.user;
+			const senderUser = await usersDao.fetchUser({_id: ObjectId(context.user._id)});
 
 			const receiverUser = await usersDao.fetchUser({_id: ObjectId(args._id)});
 
@@ -191,6 +190,54 @@ const userResolvers = {
 			const isSenderPartOfReceiver = receiverUser.relationships.filter(x =>
 				x.userId.toString() === senderUser._id.toString());
 
+			if (isReceiverPartOfSender.length === 0 || isSenderPartOfReceiver.length === 0) {
+				return 'No relationship between users';
+			}
+
+			await usersDao.updateUser({_id: receiverUser._id}, {
+				$pull: {
+					relationships: {
+						userId: ObjectId(senderUser._id),
+					},
+				},
+			}).catch(e => {
+				console.log(e);
+			}).then(res => console.log(res));
+
+
+			await usersDao.updateUser({_id: senderUser._id}, {
+				$pull: {
+					relationships: {
+						userId: ObjectId(receiverUser._id),
+					},
+				},
+			}).catch(e => {
+				console.log(e);
+			});
+			return 'success';
+		},
+		createUserRelationship: async(parent, args, context) => {
+			if (!context.loggedIn) {
+				throw new AuthenticationError('Please Login Again!');
+			}
+			const senderUser = await usersDao.fetchUser({_id: ObjectId(context.user._id)});
+
+			const receiverUser = await usersDao.fetchUser({_id: ObjectId(args._id)});
+
+			console.log('receiverUser.relationships');
+			console.log(receiverUser.relationships);
+			console.log('senderUser');
+			console.log(senderUser);
+
+			const isReceiverPartOfSender = senderUser.relationships.filter(x =>
+				x.userId.toString() === receiverUser._id.toString()
+			);
+
+			const isSenderPartOfReceiver = receiverUser.relationships.filter(x =>
+				x.userId.toString() === senderUser._id.toString());
+
+			console.log(isReceiverPartOfSender);
+			console.log(isSenderPartOfReceiver);
 
 			if (isReceiverPartOfSender.length !== 0 || isSenderPartOfReceiver.length !== 0) {
 				return 'already requested';

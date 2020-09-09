@@ -25,6 +25,7 @@ const server = new ApolloServer({
 		const token = req.headers.authorization || '';
 		// try to retrieve a user with the token
 		const {payload: user, loggedIn} = getPayload(token);
+		console.log(user);
 
 		// add the user to the context
 		return {user, loggedIn};
