@@ -6,6 +6,7 @@ exports.fetchEvents = query => db.events().find(query).toArray()
 		return res;
 	});
 
+
 // Get event
 exports.fetchEvent = query => db.events().findOne(query);
 
