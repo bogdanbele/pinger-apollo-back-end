@@ -1,5 +1,5 @@
-const {eventsDao} = require('../dao/eventsDao');
-const {statuses} = require('../helpers/errorHandlers');
+const {eventsDao} = require('../../dao/eventsDao');
+const {statuses} = require('../../helpers/errorHandlers');
 
 const ObjectId = require('mongodb').ObjectId;
 
