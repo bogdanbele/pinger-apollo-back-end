@@ -8,7 +8,6 @@ const {gql} = require('apollo-server');
 // 1 - awaitingResponse     -- received by user 2
 // 2 - accepted
 
-
 /*
 	User 1 sends a friend request to User 2
 	UserRelationShip Created for User 1 with status: 0
@@ -23,50 +22,50 @@ const {gql} = require('apollo-server');
  */
 
 const userType = gql`
-    type User {
-        _id: ID!
-        username: String!
-        password: String!
-        token: String
-        relationships: [UserRelationship]
-        createdAt: Date!
-    }
+	type User {
+		_id: ID!
+		username: String!
+		password: String!
+		token: String
+		relationships: [UserRelationship]
+		createdAt: Date!
+	}
 
-    type UsersResult {
-        users: [User]
-        currentPage: Int
-        totalPages: Int
-    }
+	type UsersResult {
+		users: [User]
+		currentPage: Int
+		totalPages: Int
+	}
 
-    type UserStatusResult {
-        users : [UserStatus]
-        currentPage: Int
-        totalPages: Int
-    }
+	type UserStatusResult {
+		users: [UserStatus]
+		currentPage: Int
+		totalPages: Int
+	}
 
-    type UserRelationship {
-        userId: ID!
-        status: Int!
-        updatedAt: Date!
-    }
+	type UserRelationship {
+		userId: ID!
+		status: Int!
+		updatedAt: Date!
+	}
 
-    type ExtendedUserRelationship {
-        user: User!
-        status: Int!
-        updatedAt: Date!
-    }
-    
-    type MyRelationshipsResponse {
-        users :[ExtendedUserRelationship]
-        count: Int!
-        totalPages: Int!
-        currentPage: Int!
-    }
+	type ExtendedUserRelationship {
+		user: User!
+		status: Int!
+		updatedAt: Date!
+	}
 
-    type UserStatus {
-        user: User!
-        status: Int
-    }
+	type MyRelationshipsResponse {
+		users: [ExtendedUserRelationship]
+		count: Int!
+		totalPages: Int!
+		currentPage: Int!
+	}
+
+	type UserStatus {
+		user: User!
+		status: Int
+	}
 `;
 
 module.exports = {

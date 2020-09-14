@@ -7,7 +7,7 @@ const {AuthenticationError} = require('apollo-server');
 
 const eventResolvers = {
 	Query: {
-		myEvents: async(parent, args, context) => {
+		myEvents: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -16,7 +16,7 @@ const eventResolvers = {
 		},
 	},
 	Mutation: {
-		createEvent: async(parent, args, context) => {
+		createEvent: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}
@@ -32,7 +32,7 @@ const eventResolvers = {
 			};
 			return (await eventsDao.createEvent(newEvent)).ops[0];
 		},
-		deleteEvent: async(parent, args, context) => {
+		deleteEvent: async (parent, args, context) => {
 			if (!context.loggedIn) {
 				throw new AuthenticationError('Please Login Again!');
 			}

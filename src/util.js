@@ -2,24 +2,25 @@ const jwt = require('jsonwebtoken');
 const config = require('./config');
 const bcrypt = require('bcryptjs');
 
-const encryptPassword = password => new Promise((resolve, reject) => {
-	bcrypt.genSalt(10, (err, salt) => {
-		if (err) {
-			reject(err);
-			return false;
-		}
-		bcrypt.hash(password, salt, (err, hash) => {
+const encryptPassword = password =>
+	new Promise((resolve, reject) => {
+		bcrypt.genSalt(10, (err, salt) => {
 			if (err) {
 				reject(err);
 				return false;
 			}
-			resolve(hash);
-			return true;
+			bcrypt.hash(password, salt, (err, hash) => {
+				if (err) {
+					reject(err);
+					return false;
+				}
+				resolve(hash);
+				return true;
+			});
 		});
 	});
-});
 
-const comparePassword = (password, hash) => async(resolve, reject) => {
+const comparePassword = (password, hash) => async (resolve, reject) => {
 	try {
 		const isMatch = await bcrypt.compare(password, hash);
 		resolve(isMatch);

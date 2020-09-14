@@ -43,7 +43,7 @@
     "extends": "eslint:recommended"
   },
   "scripts": {
-    "start": "nodemon src --experimental-modules",
+    "start": "nodemon src",
     "publish-schema": "npx apollo service:push",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix"

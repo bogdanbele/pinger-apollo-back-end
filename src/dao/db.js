@@ -17,7 +17,7 @@ exports.connect = (url, done) => {
 	}).then();
 };
 
-exports.getCollection = collectionName =>  state.db.collection(collectionName);
+exports.getCollection = collectionName => state.db.collection(collectionName);
 
 exports.events = () => state.db.collection('events');
 
